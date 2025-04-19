@@ -4,17 +4,23 @@ import { NextResponse } from 'next/server';
 const prisma = new PrismaClient();
 
 export async function DELETE(
-  request: Request,
+  _request: Request,
   props: { params: Promise<{ id: string }> }
 ) {
-  const params = await props.params;
-  const { id } = params;
+  try {
+    const { id } = await props.params;
 
-  await prisma.todo.delete({
-    where: {
-      id: id,
-    },
-  });
+    await prisma.todo.delete({
+      where: { id },
+    });
 
-  return NextResponse.json({ message: 'Tâche supprimée' }, { status: 200 });
+    return NextResponse.json({ message: 'Tâche supprimée' }, { status: 200 });
+  } catch (error) {
+    console.error('Erreur DELETE /api/todo/[id]:', error);
+
+    return NextResponse.json(
+      { error: 'Une erreur est survenue lors de la suppression' },
+      { status: 500 }
+    );
+  }
 }

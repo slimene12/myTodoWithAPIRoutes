@@ -1,47 +1,51 @@
-import { PrismaClient } from "@prisma/client";
-import { NextResponse } from "next/server";
+import { PrismaClient } from '@prisma/client';
+import { NextResponse } from 'next/server';
 
-const prisma = new PrismaClient(); 
+const prisma = new PrismaClient();
 
 type Params = {
-    id: string
-}
-
+  id: string;
+};
 
 // FETCH GET
-export async function GET(_request: Request, props: {params: Promise<Params>}) {
-    const params = await props.params;
-    const { id } = params;
-
-    // SQL
-    // SELECT * FROM todo WHERE id = 43432
-    // const todo = await prisma.todo.findUnique({
-    //     where: {
-    //         id: id
-    //     }
-    // })
+export async function GET(
+  _request: Request,
+  props: { params: Promise<Params> }
+) {
+  try {
+    const { id } = await props.params;
 
     const todos = await prisma.todo.findMany();
     const todoWithId = todos.find((todo: any) => todo.id === id);
 
+    if (!todoWithId) {
+      return NextResponse.json({ error: 'Todo not found' }, { status: 404 });
+    }
+
     return NextResponse.json(todoWithId, { status: 200 });
+  } catch (error) {
+    console.error('Erreur GET /api/todo/[id]:', error);
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
+  }
 }
 
-// MODIFIER : PATCH
-export async function PATCH(request: Request, props: {params: Promise<Params>}) {
-    const params = await props.params;
-    const { id } = params;
-    const {title, date } = await request.json();
-    // UPDATE todo SET title = 'acheter des bananes', date = '2024-03-25 WHERE id = 3
-    const todo = await prisma.todo.update({
-        where: {
-            id: id
-        },
-        data: {
-            title: title,
-            date: date
-        }
-    })
+// PATCH (MODIFIER)
+export async function PATCH(
+  request: Request,
+  props: { params: Promise<Params> }
+) {
+  try {
+    const { id } = await props.params;
+    const { title, date } = await request.json();
 
-    return NextResponse.json(todo, { status: 200});
+    const todo = await prisma.todo.update({
+      where: { id },
+      data: { title, date },
+    });
+
+    return NextResponse.json(todo, { status: 200 });
+  } catch (error) {
+    console.error('Erreur PATCH /api/todo/[id]:', error);
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
+  }
 }
