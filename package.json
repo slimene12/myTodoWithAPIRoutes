@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "prebuild": "prisma generate",
+    "prisma:generate": "prisma generate",
+    "build": "npm run prisma:generate && next build",
     "dev": "next dev --turbopack",
-    "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
